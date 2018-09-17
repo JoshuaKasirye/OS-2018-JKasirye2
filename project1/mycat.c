@@ -6,7 +6,7 @@ int main(char *argc, char *argv[])  //argc, and argv[0/1..] for CMD
     FILE *datafile;
     char buffer;
 
-    datafile = fopen(argv[0], "r");
+    datafile = fopen(argv[1], "r");
     if (datafile == NULL)
     {
         printf("mycat: cannot open file\n");
@@ -24,4 +24,5 @@ int main(char *argc, char *argv[])  //argc, and argv[0/1..] for CMD
     fclose(datafile);
     return 0;
 }
+
 
