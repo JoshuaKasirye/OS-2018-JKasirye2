@@ -1,3 +1,7 @@
+//Created by Joshua Kasirye
+//OS project 1
+//57442019
+
 #include <stdio.h> //std C library
 #include <stdlib.h> // to enable exit()
 int i; //for loop variable
@@ -17,7 +21,7 @@ int main(int argc, char *argv[])
         if (datafile != NULL){
             while (content != EOF){ // loop to print every character in file to the end
                 printf ("%c", content);
-                buffer = fgetc(datafile);
+                content = fgetc(datafile);
                 }
             }
         fclose(datafile); //closing the file
