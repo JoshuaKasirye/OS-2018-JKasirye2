@@ -1,26 +1,26 @@
-#include <stdio.h> //std library
-#include <stdlib.h> // For exit()
-int i;
+#include <stdio.h> //std C library
+#include <stdlib.h> // to enable exit()
+int i; //for loop variable
 
 int main(int argc, char *argv[])
 {
-    FILE *datafile;
-    char buffer;
+    FILE *datafile;  // file varible name
+    char content;   //variable name for characters being read in a line
 
     for(i=1;i<argc;i++){
-        datafile = fopen(argv[i], "r");
+        datafile = fopen(argv[i], "r");  //opening the file
         if (datafile == NULL){
-            printf("mycat: cannot open file\n");
+            printf("mycat: cannot open file\n"); //if the file in datafile can't be opened
             exit(0);
             }
-        buffer = fgetc(datafile);
+        content = fgetc(datafile); // getting characters from opened file
         if (datafile != NULL){
-            while (buffer != EOF){
-                printf ("%c", buffer);
+            while (content != EOF){ // loop to print every character in file to the end
+                printf ("%c", content);
                 buffer = fgetc(datafile);
                 }
             }
-        fclose(datafile);
+        fclose(datafile); //closing the file
         printf("\n");
         }
     return 0;
