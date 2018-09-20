@@ -1,4 +1,3 @@
-
 #include <stdio.h> //std library
 #include <stdlib.h> // For exit()
 int i;
@@ -22,6 +21,7 @@ int main(int argc, char *argv[])
                 }
             }
         fclose(datafile);
+        printf("\n");
         }
     return 0;
 }
