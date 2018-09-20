@@ -1,28 +1,30 @@
+
 #include <stdio.h> //std library
 #include <stdlib.h> // For exit()
+int i;
 
-int main(char *argc, char *argv[])  //argc, and argv[0/1..] for CMD
+int main(int argc, char *argv[])
 {
     FILE *datafile;
     char buffer;
 
-    datafile = fopen(argv[1], "r");
-    if (datafile == NULL)
-    {
-        printf("mycat: cannot open file\n");
-        exit(0);
-    }
-    buffer = fgetc(datafile);
-   if (datafile != NULL)
-    {
-        while (buffer != EOF)
-        {
-            printf ("%c", buffer);
-            buffer = fgetc(datafile);
+    for(i=1;i<argc;i++){
+        datafile = fopen(argv[i], "r");
+        if (datafile == NULL){
+            printf("mycat: cannot open file\n");
+            exit(0);
+            }
+        buffer = fgetc(datafile);
+        if (datafile != NULL){
+            while (buffer != EOF){
+                printf ("%c", buffer);
+                buffer = fgetc(datafile);
+                }
+            }
+        fclose(datafile);
         }
-    }
-    fclose(datafile);
     return 0;
 }
+
 
 
