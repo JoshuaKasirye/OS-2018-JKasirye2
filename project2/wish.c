@@ -1,3 +1,4 @@
+
 #include <stdio.h> //std C library
 #include <stdlib.h> // To enable use of exit()
 #include <string.h> // string lib
@@ -9,6 +10,7 @@ int wish_loop();
 int wish_exit();
 char **read_wish_stdin();
 int exec_cmd();
+int builtIn_cd();
 
 //Main functions for the wish.c
 int main(int argc, char *argv[]){
@@ -16,11 +18,10 @@ int main(int argc, char *argv[]){
         wish_loop();
     }
     else if (argc == 2){
-        //wish_bash();
-        printf("USe the Bash niggar");
+        printf("USing the bash \n");
     }
     else if(argc > 2 ){
-        printf("Please The maximum arguments are two");
+        printf("Please The maximum arguments are two\n");
         exit(1);
     }
 
@@ -31,11 +32,12 @@ int main(int argc, char *argv[]){
 //wish loop
 int wish_loop(){
     char **task;
-    while(1){
+    int status;
+    do {
         printf("wish> ");
-        task = read_wish_stdin();
-        exec_cmd(task);
-    }
+        task = read_wish_stdin();        
+	status = exec_cmd(task);
+    }while (status);
 }
 
 
@@ -47,12 +49,10 @@ char **read_wish_stdin(){
 
 
     fgets(name, 100, stdin);
-    //scanf("%[^\n]s",name);
-    token = strtok(name," ");
+    token = strtok(name," \n");
 
     int i = 0;
     while (token != NULL){
-	//token[strcspn(token,"\n")];
         array[i] = token;
        	token = strtok (NULL," ");
         i = i + 1;
@@ -64,12 +64,18 @@ char **read_wish_stdin(){
 
 //Execution command
 int exec_cmd(char **array){
-   // printf("%s",array[0]);
-    if (array[0] == "exit"){
+    if (strcmp(array[0],"exit") == 0){
+	printf("passed exit");
         wish_exit();
     }
+
+ 
+    //Calling the cd builtIn first
+    builtIn_cd(array);
+    
     char str1[10] = "/bin/";
     char str2[10] = "/usr/bin/";
+
     //concatenating the paths
     char *path1 = malloc(strlen(str1) + strlen(array[0]) + 1);
     strcat(path1,str1);
@@ -77,48 +83,54 @@ int exec_cmd(char **array){
     char *path2 = malloc(strlen(str2) + strlen(array[0]) + 1);
     strcat(path2,str2);
     strcat(path2,array[0]);
-    printf("%s", path1);
-    printf("%s", path2);
 
-   // printf("%s",array[0]);
-
+    pid_t wait_pid;
+    pid_t pid;
+    int status;
     if (access(path1, F_OK)==0){
-        pid_t pid = fork();
+        pid = fork();
         if (pid == 0){
             array[0] = path1;
             execv(array[0],array);
-            printf("The exec didn't work ");
-            }
-        else{
-            printf("no child ");
+            printf("The exec didn't work\n ");
             }
      }
      else if (access(path2, F_OK)==0){
-        pid_t pid = fork();
+        pid = fork();
         if (pid == 0){
             array[0] = path2;
             execv(array[0],array);
-            printf("The exec didn't work ");
-            }
-        else{
-            printf("no child ");
+            printf("The exec didn't work\n ");
             }
      }
 
      else {
-        printf("This has no path\n");
-     }
+         printf("Unknown Command ...\n");
+   	 do {
+	    wait_pid = waitpid(pid, &status, WUNTRACED);
+    	} while (!WIFEXITED(status) && !WIFSIGNALED(status));
+       }
 
     return 1;
 }
 
-
+//Wish Exit function
 int wish_exit(){
     exit(0);
 }
 
 
-
+//BuiltIn cd command
+int builtIn_cd(char **array){
+   // printf("I have been called, then what man??");
+    if ((strcmp(array[0],"cd") == 0) && array[1] != NULL){
+	//printf("Frst if");
+        if (chdir(array[1]) != 0){
+            printf("The path does not exist ...");
+        }
+    }
+    return 1;
+}
 
 
 
