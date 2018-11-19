@@ -1,16 +1,28 @@
 
+/*
+Operating Systems
+Project 2
+Creating a bash Shell
+By: Joshua Kasirye
+*/
+//Including all necessary libraries
 #include <stdio.h> //std C library
 #include <stdlib.h> // To enable use of exit()
 #include <string.h> // string lib
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
+#include <fcntl.h>
 
+//Creating the pro-log
 int wish_loop();
 int wish_exit();
 char **read_wish_stdin();
 int exec_cmd();
 int builtIn_cd();
+volatile int item = 0;
+char *filename;
+char **implement_path();
 
 //Main functions for the wish.c
 int main(int argc, char *argv[]){
@@ -18,15 +30,14 @@ int main(int argc, char *argv[]){
         wish_loop();
     }
     else if (argc == 2){
-        printf("USing the bash \n");
+        printf("Using the bash \n");
     }
     else if(argc > 2 ){
         printf("Please The maximum arguments are two\n");
         exit(1);
     }
-
     return 1;
-    }
+}
 
 
 //wish loop
@@ -35,8 +46,8 @@ int wish_loop(){
     while(1) {
         printf("wish> ");
         task = read_wish_stdin();
-	exec_cmd(task);
-	}
+        exec_cmd(task);
+        }
 }
 
 
@@ -45,36 +56,48 @@ char **read_wish_stdin(){
     char **array = malloc(64 *sizeof(char));
     char *token;
     char name[60];
-
-
     fgets(name, 100, stdin);
     token = strtok(name," \n");
-
+    //token1 = strtok(name,"&\n");
     int i = 0;
+    volatile int index = 0;
     while (token != NULL){
-        array[i] = token;
-       	token = strtok (NULL," \n");
+        if (strcmp(token,">") == 0){
+            item = 1;
+            index = i;
+            array[i] = NULL;
+            }
+        else{
+            array[i] = token;
+        }
+        token = strtok (NULL," \n");
         i = i + 1;
+
         }
     array[i] = NULL;
+    if (item == 1 && array[index + 1] != NULL && array[index + 1] != " " ){
+        filename = array[index+1];
+        printf("%s\n",filename);
+    }
     return array;
 }
 
 
 //Execution command
 int exec_cmd(char **array){
+    char **path_lst_new;
     if (strcmp(array[0],"exit") == 0){
-	printf("passed exit");
         wish_exit();
     }
-
- 
     //Calling the cd builtIn first
    if (strcmp(array[0], "cd")==0){
-	 builtIn_cd(array);
-	 return 1;
+            builtIn_cd(array);
+        }
+
+   if (strcmp(array[0], "path")==0){
+       path_lst_new = implement_path(array);
    }
-    
+
     char str1[10] = "/bin/";
     char str2[10] = "/usr/bin/";
 
@@ -93,17 +116,39 @@ int exec_cmd(char **array){
         pid = fork();
         if (pid == 0){
             array[0] = path1;
-            execv(array[0],array);
-            printf("The exec didn't work\n ");
+            if (item == 1 && filename != NULL && filename != ""){
+                FILE *out = fopen(filename,"w+"); //O_RDWR|O_CREAT,S_IRUSR |S_IWUSR);
+                dup2(fileno(out),fileno(stdout));
+                dup2(fileno(out),fileno(stderr));
+                fclose(out);
+                execv(array[0],array);
+                printf("The exec didn't work\n ");
             }
-	pid = wait(NULL);	
+            else{
+                execv(array[0],array);
+                printf("The exec didn't work\n ");
+            }
+
+            }
+	pid = wait(NULL);
      }
      else if (access(path2, F_OK)==0){
         pid = fork();
         if (pid == 0){
             array[0] = path2;
-            execv(array[0],array);
-            printf("The exec didn't work\n ");
+            if (item == 1 && filename != NULL && filename != ""){
+                FILE *out = fopen(filename,"w+"); //O_RDWR|O_CREAT,S_IRUSR |S_IWUSR);
+                dup2(fileno(out),fileno(stdout));
+                dup2(fileno(out),fileno(stderr));
+                fclose(out);
+                execv(array[0],array);
+                printf("The exec didn't work\n ");
+            }
+            else{
+                execv(array[0],array);
+                printf("The exec didn't work\n ");
+            }
+
             }
 	pid = wait(NULL);
      }
@@ -111,10 +156,13 @@ int exec_cmd(char **array){
      else {
          printf("Unknown Command ...\n");
 	 pid = wait(NULL);
-    	} 
+    	}
+
+    item = 0;
 
     return 1;
 }
+
 
 //Wish Exit function
 int wish_exit(){
@@ -132,6 +180,29 @@ int builtIn_cd(char **array){
     }
     return 1;
 }
+
+//implementing path
+int path_index = 0;
+char **implement_path(char **array){
+    //creating path list(array)
+    char **Path_lst = malloc(64 *sizeof(char));
+    char *str1 = "/bin";
+    char *str2 = "/usr/bin";
+    Path_lst[path_index]= str1;
+    Path_lst[path_index+1] = str2;
+    if (strcmp(array[1]," ") == 0){
+        printf("No path provided... \n");
+        free(Path_lst);
+    }
+    if(array[1] != NULL){ //updating list
+        Path_lst[path_index+1] = array[1];
+        printf("made the path list \n");
+    }
+    return Path_lst;
+}
+
+
+
 
 
 
